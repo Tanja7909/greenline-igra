@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7 Zelenih kart — Obnovitev</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Spline+Sans:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg:#1c1c1c;
+    --panel:#242424;
+    --ink:#f1f4f1;
+    --muted:#9aa39c;
+    --green:#39b56a;
+    --green-bright:#43c878;
+    --green-deep:#1f7a45;
+    --green-card:#3aa869;
+    --gold:#e8c275;
+    --line:rgba(255,255,255,.09);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Spline Sans',sans-serif;
+    background:
+      radial-gradient(1100px 560px at 85% -10%, rgba(57,181,106,.10), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    min-height:100%;
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{width:100%;max-width:600px}
+
+  .shell{
+    background:linear-gradient(180deg, var(--panel), #1d1d1d);
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:30px 28px 26px;
+    box-shadow:0 30px 80px -30px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.04);
+    position:relative;overflow:hidden;
+  }
+
+  .eyebrow{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .title{font-family:'Fraunces',serif;font-weight:900;font-size:38px;line-height:1.03;letter-spacing:-.01em;margin:10px 0 0;color:var(--green-bright)}
+  .lede{color:var(--muted);font-size:15px;line-height:1.55;margin-top:14px}
+  .lede strong{color:var(--ink)}
+
+  .grouphint{display:flex;gap:12px;margin:22px 0 6px}
+  .gh{flex:1;border-radius:13px;padding:13px 14px;border:1px solid var(--line);background:rgba(57,181,106,.06)}
+  .gh .k{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--green-bright);font-weight:700}
+  .gh .v{font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.4}
+
+  .btn{
+    appearance:none;border:0;cursor:pointer;font-family:inherit;font-weight:600;
+    border-radius:13px;font-size:16px;padding:15px 20px;width:100%;color:#06140d;
+    background:linear-gradient(180deg,var(--green-bright),var(--green-deep));
+    box-shadow:0 14px 30px -12px rgba(57,181,106,.6);
+    transition:transform .12s ease;margin-top:20px;
+  }
+  .btn:hover{transform:translateY(-2px)}
+  .btn:active{transform:translateY(0)}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .count{font-size:12px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+  .score-pill{font-family:'Fraunces',serif;font-weight:600;font-size:15px;color:var(--gold)}
+  .track{height:6px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;margin-bottom:22px}
+  .fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--gold));transition:width .4s cubic-bezier(.2,.8,.2,1)}
+
+  .prompt-label{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .quote{
+    font-family:'Fraunces',serif;font-weight:500;font-size:23px;line-height:1.34;font-style:italic;
+    min-height:96px;display:flex;align-items:center;letter-spacing:-.005em;
+    border-left:3px solid var(--green);padding-left:18px;color:#fbfdfb;
+  }
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+  .opt{
+    text-align:left;cursor:pointer;border-radius:13px;padding:13px 14px;
+    border:1.5px solid var(--line);background:linear-gradient(180deg,var(--green-card),#2f9059);
+    color:#fff;transition:transform .1s ease, box-shadow .12s ease, filter .12s ease;
+    position:relative;overflow:hidden;
+  }
+  .opt:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 24px -12px rgba(57,181,106,.7)}
+  .opt .grp{font-size:9px;letter-spacing:.18em;text-transform:uppercase;opacity:.8;font-weight:700}
+  .opt .nm{font-weight:700;font-size:15px;margin-top:4px;line-height:1.15}
+  .opt .en{font-size:11px;opacity:.82;margin-top:3px}
+  .opt:disabled{cursor:default}
+  .opt.correct{outline:3px solid #d6ffe6;filter:saturate(1.2)}
+  .opt.wrong{background:linear-gradient(180deg,#c4424e,#9c1f2c);outline:3px solid #ffd9dd}
+  .opt.dim{opacity:.4;filter:grayscale(.3)}
+
+  .feedback{margin-top:16px;border-radius:14px;padding:16px;border:1px solid var(--line);
+    opacity:0;transform:translateY(8px);transition:opacity .25s ease, transform .25s ease;max-height:0;overflow:hidden}
+  .feedback.show{opacity:1;transform:none;max-height:400px}
+  .feedback.correct{background:linear-gradient(180deg,rgba(57,181,106,.13),transparent);border-color:rgba(57,181,106,.4)}
+  .feedback.wrong{background:linear-gradient(180deg,rgba(239,77,90,.12),transparent);border-color:rgba(239,77,90,.4)}
+  .verdict{font-weight:700;font-size:14px;letter-spacing:.03em;margin-bottom:7px}
+  .feedback.correct .verdict{color:var(--green-bright)}
+  .feedback.wrong .verdict{color:#ef6b76}
+  .coach{color:var(--ink);font-size:13.5px;line-height:1.55}
+  .coach b{color:var(--gold);font-weight:600}
+
+  .result-big{font-family:'Fraunces',serif;font-weight:900;font-size:70px;line-height:1;color:var(--green-bright);margin:12px 0 0}
+  .result-big .of{font-size:24px;color:var(--muted)}
+  .rank{font-family:'Fraunces',serif;font-weight:900;font-size:30px;line-height:1.08;margin-top:8px}
+  .rmsg{color:var(--muted);font-size:15px;line-height:1.55;margin-top:9px}
+  .recap{margin-top:22px;border-top:1px solid var(--line);padding-top:16px}
+  .recap h5{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .recap .row{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:7px 0;border-bottom:1px dashed rgba(255,255,255,.07)}
+  .recap .row span:first-child{color:var(--ink);font-weight:600}
+  .recap .row span:last-child{color:var(--muted);font-size:12px;text-align:right}
+
+  .hidden{display:none}
+  .fade{animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .foot{text-align:center;color:var(--muted);font-size:11px;margin-top:16px;letter-spacing:.04em;opacity:.7}
+
+  @media(max-width:430px){ .grid{grid-template-columns:1fr} .title{font-size:32px} .quote{font-size:20px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="shell">
+
+    <!-- START -->
+    <section id="start">
+      <div class="eyebrow">GreenLine · Obnovitev znanja · 2 min</div>
+      <h1 class="title">7 zelenih kart</h1>
+      <p class="lede">Kratka osvežitev. Prikazal se vam bo <strong>stavek iz pogovora</strong> — vaša naloga je izbrati, <strong>katero zeleno karto</strong> ta stavek ponazarja. Sedem stavkov, ena karta za vsako.</p>
+
+      <div class="grouphint">
+        <div class="gh"><div class="k">Jasnost · Clarity</div><div class="v">Strinjajte se o ciljih, izhodiščih in naslednjih korakih.</div></div>
+        <div class="gh"><div class="k">Zavezanost · Commitment</div><div class="v">Spraševanje, poslušanje, upoštevanje, odkrit pogovor.</div></div>
+      </div>
+
+      <button class="btn" onclick="start()">Začni →</button>
+    </section>
+
+    <!-- GAME -->
+    <section id="game" class="hidden">
+      <div class="topbar">
+        <span class="count">Stavek <span id="num">1</span> / <span id="total">7</span></span>
+        <span class="score-pill"><span id="scoreLive">0</span> pravilnih</span>
+      </div>
+      <div class="track"><div class="fill" id="fill"></div></div>
+
+      <div class="prompt-label">Kateri zeleni karti pripada ta stavek?</div>
+      <div class="quote" id="quote">—</div>
+
+      <div class="grid" id="grid"></div>
+
+      <div class="feedback" id="feedback">
+        <div class="verdict" id="verdict"></div>
+        <div class="coach" id="coach"></div>
+        <button class="btn" id="nextBtn" onclick="next()" style="margin-top:14px">Naprej →</button>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="results" class="hidden">
+      <div class="eyebrow">Vaš rezultat</div>
+      <div class="result-big"><span id="finalScore">0</span><span class="of">/7</span></div>
+      <div class="rank" id="rank">—</div>
+      <p class="rmsg" id="rmsg"></p>
+
+      <div class="recap">
+        <h5>7 zelenih kart — za spomin</h5>
+        <div id="recapList"></div>
+      </div>
+
+      <button class="btn" onclick="restart()">Ponovi igro ↺</button>
+      <div class="foot">GreenLine Conversations · interna obnovitev za vodje</div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+/* The 7 Green Cards, exactly as in the training. */
+const CARDS = [
+  { id:"there",  group:"Jasnost",    nm:"Strinjajte se o »ciljih«",            en:"Agree to 'There'" },
+  { id:"here",   group:"Jasnost",    nm:"Strinjajte se o »izhodiščih«",        en:"Agree to 'Here'" },
+  { id:"steps",  group:"Jasnost",    nm:"Strinjajte se o »naslednjih korakih«",en:"Agree to Next Steps" },
+  { id:"enquire",group:"Zavezanost", nm:"Spraševanje",                          en:"Enquire" },
+  { id:"hear",   group:"Zavezanost", nm:"Poslušanje",                           en:"Hear" },
+  { id:"ack",    group:"Zavezanost", nm:"Upoštevanje",                          en:"Acknowledge" },
+  { id:"straight",group:"Zavezanost",nm:"Odkrit pogovor",                       en:"Straight Talk" },
+];
+const CARD = Object.fromEntries(CARDS.map(c=>[c.id,c]));
+
+/* One example phrase per card. Edit the quotes to match your trainer's wording. */
+const ITEMS = [
+  { card:"there",
+    quote:"»Da se prepričam, da sva usklajena — kakšen točno je cilj, ki ga želiva s tem pogovorom doseči?«",
+    coach:"Stavek določa <b>cilj</b> oz. kam želita priti. To je »Strinjajte se o ciljih« — Agree to 'There'." },
+  { card:"here",
+    quote:"»Preden gremo naprej, naj povzamem, kako jaz vidim trenutno stanje — se ti zdi, da to drži?«",
+    coach:"Tu uskladita <b>izhodišče</b>, kje sta zdaj. To je »Strinjajte se o izhodiščih« — Agree to 'Here'." },
+  { card:"steps",
+    quote:"»Torej: ti pripraviš osnutek do petka, jaz pa ga pregledam čez vikend. Se strinjava?«",
+    coach:"Stavek določa <b>konkretne naslednje korake</b> in kdo kaj naredi. To je »Strinjajte se o naslednjih korakih« — Agree to Next Steps." },
+  { card:"enquire",
+    quote:"»Zanima me, kako ti gledaš na to — kaj bi po tvoje moralo biti drugače?«",
+    coach:"Z odprtim vprašanjem aktivno <b>vabiš mnenje</b> drugega. To je »Spraševanje« — Enquire." },
+  { card:"hear",
+    quote:"»Če prav razumem, te najbolj skrbi rok, ne pa sama vsebina — sem te pravilno slišal?«",
+    coach:"Pokažeš, da si zares <b>slišal in razumel</b>, s tem ko povzameš. To je »Poslušanje« — Hear." },
+  { card:"ack",
+    quote:"»Razumem, da ti je bilo to težko povedati, in cenim, da si bil odkrit.«",
+    coach:"<b>Priznaš in upoštevaš</b> občutke ter prispevek drugega. To je »Upoštevanje« — Acknowledge." },
+  { card:"straight",
+    quote:"»Naravnost bom povedal: tvoje zamude pri oddaji vplivajo na celotno ekipo, in to morava rešiti.«",
+    coach:"Težko sporočilo poveš <b>jasno in spoštljivo</b>, brez ovinkarjenja. To je »Odkrit pogovor« — Straight Talk." },
+];
+
+let order=[], i=0, score=0, answered=false, results=[];
+
+function start(){
+  order = shuffle([...Array(ITEMS.length).keys()]);
+  i=0;score=0;results=[];
+  document.getElementById('scoreLive').textContent='0';
+  document.getElementById('total').textContent=ITEMS.length;
+  show('game');render();
+}
+function render(){
+  answered=false;
+  const item=ITEMS[order[i]];
+  const g=document.getElementById('game');
+  g.classList.remove('fade');void g.offsetWidth;g.classList.add('fade');
+  document.getElementById('num').textContent=i+1;
+  document.getElementById('quote').textContent=item.quote;
+  document.getElementById('fill').style.width=(i/ITEMS.length*100)+'%';
+  document.getElementById('feedback').classList.remove('show','correct','wrong');
+
+  // build the 7 options (all cards, shuffled) so it's a true match
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  shuffle([...CARDS]).forEach(c=>{
+    const b=document.createElement('button');
+    b.className='opt';b.dataset.id=c.id;
+    b.innerHTML=`<div class="grp">${c.group}</div><div class="nm">${c.nm}</div><div class="en">${c.en}</div>`;
+    b.onclick=()=>answer(c.id,item,b);
+    grid.appendChild(b);
+  });
+}
+function answer(chosen,item,btn){
+  if(answered)return;answered=true;
+  const correct = chosen===item.card;
+  if(correct)score++;
+  document.getElementById('scoreLive').textContent=score;
+  results.push({q:item.quote, picked:chosen, right:item.card, ok:correct});
+
+  document.querySelectorAll('.opt').forEach(o=>{
+    o.disabled=true;
+    if(o.dataset.id===item.card) o.classList.add('correct');
+    else if(o===btn) o.classList.add('wrong');
+    else o.classList.add('dim');
+  });
+
+  const fb=document.getElementById('feedback');
+  fb.classList.add('show', correct?'correct':'wrong');
+  document.getElementById('verdict').textContent =
+    correct ? '◆ Pravilno!' : '✕ Pravilna karta je: '+CARD[item.card].nm;
+  document.getElementById('coach').innerHTML=item.coach;
+  document.getElementById('fill').style.width=((i+1)/ITEMS.length*100)+'%';
+  document.getElementById('nextBtn').textContent=(i===ITEMS.length-1)?'Poglej rezultat →':'Naprej →';
+}
+function next(){ if(i<ITEMS.length-1){i++;render();} else finish(); }
+function finish(){
+  show('results');
+  document.getElementById('finalScore').textContent=score;
+  const pct=score/ITEMS.length;
+  let rank,msg;
+  if(pct===1){rank="Mojster zelenih kart!";msg="Brezhibno. Vseh sedem kart imate v malem prstu — točno to, kar potrebuje vaša ekipa.";}
+  else if(pct>=5/7){rank="Zelo dobro.";msg="Večino kart ste prepoznali takoj. Še malo pozornosti na nianse med poslušanjem in upoštevanjem.";}
+  else if(pct>=4/7){rank="Solidno.";msg="Osnove so tu. Ponovite razliko med tremi kartami jasnosti in štirimi kartami zavezanosti.";}
+  else{rank="Čas za ponovitev.";msg="Dober trenutek za vrnitev h karticam. Začnite z jasnostjo: cilji, izhodišča, naslednji koraki.";}
+  document.getElementById('rank').textContent=rank;
+  document.getElementById('rmsg').textContent=msg;
+
+  const list=document.getElementById('recapList');
+  list.innerHTML='';
+  CARDS.forEach(c=>{
+    const row=document.createElement('div');row.className='row';
+    row.innerHTML=`<span>${c.nm}</span><span>${c.group} · ${c.en}</span>`;
+    list.appendChild(row);
+  });
+}
+function restart(){ show('start'); }
+function show(id){
+  ['start','game','results'].forEach(s=>document.getElementById(s).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+function shuffle(a){for(let j=a.length-1;j>0;j--){const k=Math.floor(Math.random()*(j+1));[a[j],a[k]]=[a[k],a[j]];}return a;}
+</script>
+</body>
+</html>
